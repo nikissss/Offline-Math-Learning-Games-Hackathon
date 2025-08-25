@@ -1,0 +1,36 @@
+
+:root{
+  --bg:#f7fafc; --card:#ffffff; --text:#0f172a; --muted:#64748b;
+  --brand:#2563eb; --ok:#16a34a; --warn:#f59e0b; --bad:#ef4444;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);color:var(--text)}
+a{color:var(--brand);text-decoration:none}
+.container{max-width:980px;margin:0 auto;padding:16px}
+.grid{display:grid;gap:16px}
+.card{background:var(--card);border-radius:16px;padding:16px;box-shadow:0 4px 16px rgba(2,6,23,.06);transition:transform .08s ease, box-shadow .2s ease}
+.card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(2,6,23,.1)}
+.btn{display:inline-block;background:var(--brand);color:#fff;padding:10px 16px;border-radius:12px;border:none;cursor:pointer;font-weight:600}
+.btn.secondary{background:#e2e8f0;color:#111}
+.btn.ghost{background:transparent;border:1px solid #cbd5e1}
+.btn.success{background:var(--ok)}
+.btn.warn{background:var(--warn)}
+.btn.danger{background:var(--bad)}
+.input,select{padding:10px 12px;border-radius:10px;border:1px solid #cbd5e1;background:#fff}
+.nav{background:#fff;position:sticky;top:0;z-index:10;border-bottom:1px solid #e2e8f0}
+.nav .inner{max-width:980px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:10px 16px}
+.nav a{padding:6px 10px;border-radius:10px}
+.nav a:hover{background:#f1f5f9}
+.kpi{display:flex;gap:10px;align-items:center;background:#f8fafc;border:1px dashed #e2e8f0;padding:8px 12px;border-radius:12px}
+.flex{display:flex;gap:12px;align-items:center}
+.center{text-align:center}
+h1{font-size:28px;margin:12px 0 8px}
+h2{font-size:20px;margin:10px 0}
+.small{font-size:12px;color:var(--muted)}
+img.thumb{width:120px;height:120px;border-radius:14px;border:1px solid #e2e8f0;background:#fff;object-fit:cover}
+.theme-grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+footer{color:var(--muted);font-size:12px;padding:24px 0}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;font-weight:600;font-size:12px}
+.fade-in{animation:fade .3s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.opt-grid{display:grid;grid-template-columns:repeat(2,minmax(120px,1fr));gap:10px;margin-top:12px}

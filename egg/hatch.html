@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Hatchery</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <script defer src="../js/common.js"></script>
+  <script>
+    // const pool = {
+    //   common: [{ name: 'Bunny', img: '../assets/bunny.svg' }, { name: 'Kitty', img: '../assets/basket.svg' }],
+    //   rare: [{ name: 'Unicorn', img: '../assets/unicorn.svg' }, { name: 'Dragon', img: '../assets/dragon.svg' }]
+    // };
+    const pool = {
+      common: [
+        { name: 'Bunny', img: '../assets/bunny.jpg' },
+        // { name: 'Kitty', img: '../assets/basket.svg' }
+      ],
+      uncommon: [
+        { name: 'Wolf', img: '../assets/fox.jpg' },
+        { name: 'Pegasus', img: '../assets/pegasus.jpg' }
+      ],
+      rare: [
+        { name: 'Unicorn', img: '../assets/unicorn.jpg' },
+        { name: 'Dragon', img: '../assets/dragon.jpg' }
+      ]
+    };
+    function rnd(arr) { return arr[Math.floor(Math.random() * arr.length)] }
+    function render() {
+      const inv = invFor('egg'); const list = document.querySelector('#eggs'); const zoo = document.querySelector('#zoo');
+      list.innerHTML = ''; zoo.innerHTML = '';
+      inv.eggs.forEach((eg, i) => {
+        const c = document.createElement('div'); c.className = 'card flex';
+        c.innerHTML = `<img class='thumb' src='../assets/egg.png'/><div style='flex:1'><h2>${eg.name} <span class='badge'>${eg.rarity}</span></h2></div>
+      <button class='btn success' data-hatch='${i}'>Hatch</button>`; list.appendChild(c);
+      });
+      inv.creatures.forEach(cr => {
+        const c = document.createElement('div'); c.className = 'card flex';
+        c.innerHTML = `<img class='thumb' src='${cr.img}'/><div><h2>${cr.name}</h2><div class='small'>${cr.rarity}</div></div>`; zoo.appendChild(c);
+      });
+      list.addEventListener('click', (ev) => {
+        const i = ev.target.getAttribute('data-hatch'); if (i === null) return;
+        const egg = inv.eggs.splice(Number(i), 1)[0]; const creature = rnd(pool[egg.rarity]); inv.creatures.push({ ...creature, rarity: egg.rarity, bornAt: Date.now() });
+        saveInv('egg', inv); const box = document.querySelector('#anim');
+        box.innerHTML = `<div class='card center fade-in'><h2>Crack... crack...</h2><img class='thumb' src='${creature.img}'/><p>You hatched a <strong>${creature.name}</strong>!</p></div>`; render();
+      });
+    }
+    document.addEventListener('DOMContentLoaded', render);
+  </script>
+</head>
+
+<body>
+  <div class="nav">
+    <div class="inner"><a href="../index.html">Home</a><a href="index.html">Egg Hatchery</a>
+      <div style="margin-left:auto" class="kpi">💰 <strong data-wallet>0</strong> pts</div>
+    </div>
+  </div>
+  <div class="container fade-in">
+    <h1>Hatchery</h1>
+    <div id="anim"></div>
+    <h2>Your Eggs</h2>
+    <div id="eggs" class="grid"></div>
+    <h2>Your Creatures</h2>
+    <div id="zoo" class="grid"></div>
+  </div>
+</body>
+
+</html>

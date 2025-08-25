@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Select Dish</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <script defer src="../js/common.js"></script>
+</head>
+
+<body>
+  <div class="nav">
+    <div class="inner"><a href="../index.html">Home</a><a href="index.html">Cooking</a>
+      <div style="margin-left:auto" class="kpi">💰 <strong data-wallet>0</strong> pts</div>
+    </div>
+  </div>
+  <div class="container fade-in">
+    <h1>Choose a Dish</h1>
+    <div class="grid theme-grid">
+      <div class="card"><img class="thumb" src="../assets/pizza.jpg" />
+        <h2>Pizza</h2><button class="btn" onclick="save('Pizza')">Select</button>
+      </div>
+      <div class="card"><img class="thumb" src="../assets/pasta.jpg" />
+        <h2>Pasta</h2><button class="btn" onclick="save('Pasta')">Select</button>
+      </div>
+      <div class="card"><img class="thumb" src="../assets/icecream.jpg" />
+        <h2>Icecream</h2><button class="btn" onclick="save('Icecream')">Select</button>
+      </div>
+    </div>
+  </div>
+  <script>function save(name) { const inv = invFor('cook'); inv.dish = name; inv.ingredients = []; saveInv('cook', inv); alert('Selected: ' + name); }</script>
+</body>
+
+</html>

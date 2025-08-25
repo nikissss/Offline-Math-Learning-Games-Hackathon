@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cooking Play</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <script defer src="../js/common.js"></script>
+  <script type="module">
+    import { makeGame } from '../js/game.js';
+    document.addEventListener('DOMContentLoaded', () => {
+      const level = Number(new URLSearchParams(location.search).get('level') || '1');
+      makeGame(document.querySelector('#game'), {
+        theme: 'cook', level,
+        onEnd: ({ score }) => {
+          const got = Math.floor(score / 10);
+          const inv = invFor('cook'); for (let i = 0; i < got; i++) { inv.ingredients.push('Ingredient ' + (inv.ingredients.length + 1)); } saveInv('cook', inv);
+          addWallet(score);
+          document.querySelector('#end').innerHTML = `<div class='card center fade-in'>
+        <h2>Cook Prep Done</h2>
+        <p>You gathered <strong>${got}</strong> ingredients and earned <strong>${score}</strong> pts.</p>
+        <a class='btn success' href='result.html'>See Dish Result</a>
+      </div>`;
+        }
+      });
+    });
+  </script>
+</head>
+
+<body>
+  <div class="nav">
+    <div class="inner"><a href="../index.html">Home</a><a href="index.html">Cooking</a>
+      <div style="margin-left:auto" class="kpi">💰 <strong data-wallet>0</strong> pts</div>
+    </div>
+  </div>
+  <div class="container fade-in">
+    <h1>Cooking • Play</h1>
+    <div class="flex"><label>Level
+        <select onchange="location.search='?level='+this.value">
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+        </select></label>
+      <span class="small">60 seconds • +10 per correct</span>
+    </div>
+    <div id="game"></div>
+    <div id="end" style="margin-top:16px"></div>
+  </div>
+</body>
+
+</html>

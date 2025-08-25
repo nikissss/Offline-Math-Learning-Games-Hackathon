@@ -1,0 +1,40 @@
+<!doctype html>
+<html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AI Coach</title>
+<link rel="stylesheet" href="../css/style.css"/>
+<script defer src="../js/common.js"></script>
+<script>
+// offline "AI": drill the operation/number ranges you missed most
+function parseWrongs(){ try{return JSON.parse(localStorage.getItem('egg_last_wrongs')||'[]')}catch(e){return []} }
+function analyze(bad){
+  const ops={'+':0,'-':0}; const nums=[];
+  bad.forEach(q=>{ const m=q.match(/(\d+)\s*([+-])\s*(\d+)/); if(m){ ops[m[2]]++; nums.push(Number(m[1])); nums.push(Number(m[3])); } });
+  nums.sort((a,b)=>a-b);
+  const focus = nums.length? {min:nums[Math.max(0,Math.floor(nums.length*.1))], max:nums[Math.min(nums.length-1,Math.floor(nums.length*.9))]} : {min:0,max:20};
+  const mainOp = ops['+']>=ops['-']?'+':'-';
+  return {focus, mainOp};
+}
+function makeDrill({focus,mainOp}){
+  const min=focus.min, max=focus.max; let total=0, correct=0;
+  function rnd(n){return Math.floor(Math.random()*n)}
+  const q=document.querySelector('[data-q]'); const a=document.querySelector('[data-a]'); const s=document.querySelector('[data-s]');
+  function next(){ const x=min+rnd(max-min+1), y=min+rnd(max-min+1); const ans= mainOp==='+'?x+y:x-y; q.textContent=`${x} ${mainOp} ${y}`; q.dataset.ans=ans; a.value=''; a.focus(); }
+  document.querySelector('[data-submit]').onclick=()=>{ total++; if(Number(a.value)===Number(q.dataset.ans)){correct++; s.textContent=`${correct}/${total} correct`; } next(); };
+  next();
+}
+document.addEventListener('DOMContentLoaded', ()=>{ const wrongs=parseWrongs(); const plan=analyze(wrongs);
+  document.querySelector('[data-plan]').textContent = `Focus on ${plan.mainOp==='+'?'addition':'subtraction'} with numbers around ${plan.focus.min}–${plan.focus.max}.`;
+  makeDrill(plan); });
+</script></head>
+<body>
+<div class="nav"><div class="inner"><a href="../index.html">Home</a><a href="index.html">Egg Hatchery</a><div style="margin-left:auto" class="kpi">💰 <strong data-wallet>0</strong> pts</div></div></div>
+<div class="container fade-in">
+  <h1>AI Coach (Practice)</h1>
+  <p class="small" data-plan></p>
+  <div class="card center">
+    <div style="font-size:40px" data-q>—</div>
+    <div style="margin-top:8px"><input class="input" data-a type="number" style="width:140px" /><button class="btn" data-submit>Check</button></div>
+    <div class="small" data-s>0 correct</div>
+  </div>
+</div>
+</body></html>

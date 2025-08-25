@@ -1,0 +1,156 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Egg Shop</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <script defer src="../js/common.js"></script>
+  <!-- <script>
+    const STOCK_KEY = 'egg_shop_stock_v1'; const STOCK_TIME = 'egg_shop_last_time';
+    const eggs = [{ name: 'Common Egg', price: 200, rarity: 'common', img: '../assets/common_egg.jpg' }, { name: 'Uncommon Egg', price: 300, rarity: 'uncommon', img: '../assets/uncommon_egg.jpg' }, { name: 'Rare Egg', price: 500, rarity: 'rare', img: '../assets/rare_egg.jpg' }];
+    function refreshStock() {
+      const last = Number(localStorage.getItem(STOCK_TIME) || '0'); const now = Date.now();
+      if (now - last > 20 * 60 * 1000) { localStorage.setItem(STOCK_KEY, JSON.stringify(eggs)); localStorage.setItem(STOCK_TIME, String(now)); }
+    }
+    function render() {
+      refreshStock(); const stock = JSON.parse(localStorage.getItem(STOCK_KEY) || '[]');
+      const wrap = document.querySelector('#list'); wrap.innerHTML = '';
+      stock.forEach((e, i) => {
+        const card = document.createElement('div'); card.className = 'card flex';
+        card.innerHTML = `<img class='thumb' src='${e.img}' alt='egg'/>
+      <div style='flex:1'><h2>${e.name} <span class='badge'>${e.rarity}</span></h2><div class='small'>Costs ${e.price} pts</div></div>
+      <button class='btn' data-buy='${i}'>Buy</button>`; wrap.appendChild(card);
+      });
+      wrap.addEventListener('click', (ev) => {
+        const idx = ev.target.getAttribute('data-buy'); if (idx === null) return;
+        const item = stock[Number(idx)]; if (getWallet() < item.price) { alert('Not enough points!'); return; }
+        addWallet(-item.price); const inv = invFor('egg'); inv.eggs.push({ rarity: item.rarity, name: item.name, boughtAt: Date.now() }); saveInv('egg', inv); alert('Purchased! Go to Hatchery to hatch it.');
+      });
+    }
+    document.addEventListener('DOMContentLoaded', render);
+  </script> -->
+  <script>
+    const STOCK_KEY = 'egg_shop_stock_v1';
+    const STOCK_TIME = 'egg_shop_last_time';
+    const REFRESH_MS = 20 * 60 * 1000; // 20 minutes
+
+    // egg templates
+    const eggTypes = [
+      { name: 'Common Egg', price: 200, rarity: 'common', img: '../assets/common_egg.jpg' },
+      { name: 'Uncommon Egg', price: 300, rarity: 'uncommon', img: '../assets/uncommon_egg.jpg' },
+      { name: 'Rare Egg', price: 500, rarity: 'rare', img: '../assets/rare_egg.jpg' }
+    ];
+
+    // weighted random picker
+    function pickEgg() {
+      const roll = Math.random() * 100;
+      if (roll < 40) return { ...eggTypes[0] };      // 40% Common
+      else if (roll < 75) return { ...eggTypes[1] }; // 35% Uncommon
+      else return { ...eggTypes[2] };                // 25% Rare
+    }
+
+    function refreshStock() {
+      const last = Number(localStorage.getItem(STOCK_TIME) || '0');
+      const now = Date.now();
+      const needsRefresh = (now - last > REFRESH_MS) || !localStorage.getItem(STOCK_KEY);
+
+      if (needsRefresh) {
+        const newStock = [];
+        for (let i = 0; i < 4; i++) {
+          newStock.push(pickEgg());
+        }
+        localStorage.setItem(STOCK_KEY, JSON.stringify(newStock));
+        localStorage.setItem(STOCK_TIME, String(now));
+      }
+    }
+
+    function formatTime(ms) {
+      const totalSec = Math.max(0, Math.floor(ms / 1000));
+      const min = Math.floor(totalSec / 60);
+      const sec = totalSec % 60;
+      return `${min}:${sec.toString().padStart(2, '0')}`;
+    }
+
+    function startTimer() {
+      const timerEl = document.getElementById('timer');
+      function update() {
+        const last = Number(localStorage.getItem(STOCK_TIME) || '0');
+        const now = Date.now();
+        const remaining = REFRESH_MS - (now - last);
+        if (remaining <= 0) {
+          timerEl.textContent = "Refreshing...";
+          refreshStock();
+          render(); // re-render shop
+        } else {
+          timerEl.textContent = "Next refresh in: " + formatTime(remaining);
+        }
+      }
+      update();
+      setInterval(update, 1000);
+    }
+
+    function render() {
+      refreshStock();
+      const stock = JSON.parse(localStorage.getItem(STOCK_KEY) || '[]');
+      const wrap = document.querySelector('#list');
+      wrap.innerHTML = '';
+
+      stock.forEach((e, i) => {
+        const card = document.createElement('div');
+        card.className = 'card flex';
+        card.innerHTML = `
+        <img class='thumb' src='${e.img}' alt='egg'/>
+        <div style='flex:1'>
+          <h2>${e.name} <span class='badge'>${e.rarity}</span></h2>
+          <div class='small'>Costs ${e.price} pts</div>
+        </div>
+        <button class='btn' data-buy='${i}'>Buy</button>
+      `;
+        wrap.appendChild(card);
+      });
+
+      wrap.addEventListener('click', (ev) => {
+        const idx = ev.target.getAttribute('data-buy');
+        if (idx === null) return;
+        const stock = JSON.parse(localStorage.getItem(STOCK_KEY) || '[]');
+        const item = stock[Number(idx)];
+
+        if (getWallet() < item.price) {
+          alert('Not enough points!');
+          return;
+        }
+        addWallet(-item.price);
+        const inv = invFor('egg');
+        inv.eggs.push({ rarity: item.rarity, name: item.name, boughtAt: Date.now() });
+        saveInv('egg', inv);
+        alert('Purchased! Go to Hatchery to hatch it.');
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      render();
+      startTimer();
+    });
+  </script>
+
+
+</head>
+
+<body>
+  <div class="nav">
+    <div class="inner"><a href="../index.html">Home</a><a href="index.html">Egg Hatchery</a>
+      <div style="margin-left:auto" class="kpi">💰 <strong data-wallet>0</strong> pts</div>
+    </div>
+  </div>
+  <div class="container fade-in">
+    <h1>Egg Shop</h1>
+    <div id="list" class="grid"></div>
+    <div id="timer" class="small"></div>
+
+    <p class="small">Stock refreshes every 20 minutes.</p>
+  </div>
+</body>
+
+</html>

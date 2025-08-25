@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Shop • Store</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <script defer src="../js/common.js"></script>
+  <script>
+    const items = [
+      { name: 'Apple Crate', price: 150, img: '../assets/apple-crate.webp' },
+      { name: 'Fancy Plate', price: 250, img: '../assets/fancy_plate.jpg' },
+      { name: 'Toy Gun', price: 400, img: '../assets/toy_gun.png' },
+      { name: 'Carrot Bundle', price: 120, img: '../assets/carrot-bundle.webp' }
+    ];
+    function render() {
+      const wrap = document.querySelector('#items'); wrap.innerHTML = '';
+      items.forEach((it, i) => {
+        const c = document.createElement('div'); c.className = 'card flex';
+        c.innerHTML = `<img class='thumb' src='${it.img}'/><div style='flex:1'><h2>${it.name}</h2><div class='small'>${it.price} pts</div></div>
+      <button class='btn' data-buy='${i}'>Buy</button>`; wrap.appendChild(c);
+      });
+      wrap.addEventListener('click', (ev) => {
+        const i = ev.target.getAttribute('data-buy'); if (i === null) return;
+        const it = items[Number(i)];
+        if (getWallet() < it.price) { alert('Not enough points.'); return; }
+        addWallet(-it.price);
+        const inv = invFor('shop'); inv.items.push(it.name); saveInv('shop', inv);
+        alert('Bought: ' + it.name);
+      });
+    }
+    document.addEventListener('DOMContentLoaded', render);
+  </script>
+</head>
+
+<body>
+  <div class="nav">
+    <div class="inner"><a href="../index.html">Home</a><a href="index.html">Shopkeeping</a>
+      <div style="margin-left:auto" class="kpi">💰 <strong data-wallet>0</strong> pts</div>
+    </div>
+  </div>
+  <div class="container fade-in">
+    <h1>Store</h1>
+    <div id="items" class="grid"></div>
+  </div>
+</body>
+
+</html>

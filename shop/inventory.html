@@ -1,0 +1,14 @@
+<!doctype html>
+<html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Inventory</title><link rel="stylesheet" href="../css/style.css"/><script defer src="../js/common.js"></script>
+<script>
+function render(){ const inv=invFor('shop'); const ul=document.querySelector('#list'); ul.innerHTML='';
+  (inv.items||[]).forEach(n=>{ const li=document.createElement('li'); li.textContent=n; ul.appendChild(li); });
+  if((inv.items||[]).length===0) ul.innerHTML='<li class="small">No items yet. Play to earn coins, then buy from the store.</li>';
+}
+document.addEventListener('DOMContentLoaded', render);
+</script></head>
+<body>
+<div class="nav"><div class="inner"><a href="../index.html">Home</a><a href="index.html">Shopkeeping</a><div style="margin-left:auto" class="kpi">💰 <strong data-wallet>0</strong> pts</div></div></div>
+<div class="container fade-in"><h1>Your Inventory</h1><ul id="list"></ul></div>
+</body></html>
