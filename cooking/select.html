@@ -16,7 +16,7 @@
     </div>
   </div>
   <div class="container fade-in">
-    <h1>Choose a Dish</h1>
+    <h1>What do you want to cook today?</h1>
     <div class="grid theme-grid">
       <div class="card"><img class="thumb" src="../assets/pizza.jpg" />
         <h2>Pizza</h2><button class="btn" onclick="save('Pizza')">Select</button>
@@ -29,7 +29,16 @@
       </div>
     </div>
   </div>
-  <script>function save(name) { const inv = invFor('cook'); inv.dish = name; inv.ingredients = []; saveInv('cook', inv); alert('Selected: ' + name); }</script>
+  <script>
+    function save(name) {
+      const inv = invFor('cook');
+      inv.dish = name;
+      inv.ingredients = [];
+      saveInv('cook', inv);
+      // alert('Selected: ' + name);
+      window.location.href = 'play.html';
+    }
+  </script>
 </body>
 
 </html>

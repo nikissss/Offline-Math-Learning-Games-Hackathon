@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Egg to Pet Animation</title>
+</head>
+
+<body>
+    <canvas id="game" width="600" height="400"></canvas>
+
+    <script>
+        // Get rarity + name from query string
+        const urlParams = new URLSearchParams(window.location.search);
+        window.currentEggRarity = urlParams.get("rarity") || "common";
+        window.currentEggName = urlParams.get("name") || null;
+
+        const canvas = document.getElementById("game");
+        const ctx = canvas.getContext("2d");
+        if (window.currentEggRarity === 'rare') {
+            // Rare egg can only be bear or fox based on some logic
+            // For example, you can decide based on another variable, or just pick one fixed
+            petKey = 'bear' || 'fox';
+            // or 'fox' depending on the egg type
+        } else {
+            // Common egg
+            petKey = 'dog' || 'bird' || 'bull'; // or 'bull', or 'bunny' based on your common egg types
+        }
+        // Set egg rarity here: 'common' or 'rare'
+        // window.currentEggRarity = 'common'; // change to 'common' to test
+        // Load inventory from localStorage
+        const inv = JSON.parse(localStorage.getItem("inv:egg") || "{}");
+
+        // Pick the last bought egg (or first if you prefer)
+        if (inv.eggs && inv.eggs.length > 0) {
+            const lastEgg = inv.eggs[inv.eggs.length - 1];
+            window.currentEggRarity = lastEgg.rarity;
+        } else {
+            // fallback if no egg
+            window.currentEggRarity = "common";
+        }
+
+        // ---------------- Egg Sprites ----------------
+        const commonEgg = new Image();
+        commonEgg.src = "../assets/egg-sprite-sheet.png";
+        const rareEgg = new Image();
+        rareEgg.src = "../assets/egg-sprite-sheets.png";
+
+        const eggFrameWidth = 32;
+        const eggFrameHeight = 32;
+        const commonEggRow = 4;
+        const rareEggRow = 10;
+        const eggStartCol = 0;
+        const eggEndCol = 11;
+        let eggCurrentCol = eggStartCol;
+
+        let isEggDone = false;
+        let activePet = null;
+        let petInterval;
+        const animationSpeed = 150;
+
+        // ---------------- Pets ----------------
+        const dog = new Image(); dog.src = "../assets/Dogs-Remastered-03.png"; const dogFrameWidth = 64; const dogFrameHeight = 48; let dogRow, dogCols, dogCurrentFrame = 0;
+        const bird = new Image(); bird.src = "../assets/walk.png"; const birdFrameWidth = 32; const birdFrameHeight = 32; const birdTotalFrames = 6; let birdCurrentFrame = 0;
+        const bull = new Image(); bull.src = "../assets/Bull_animation_without_shadow.png"; const bullFrameWidth = 64; const bullFrameHeight = 64; const bullRow = 3; const bullCols = 6; let bullCurrentFrame = 0;
+        const fox = new Image(); fox.src = "../assets/Fox-Sprite-Sheet.png"; const foxFrameWidth = 32; const foxFrameHeight = 32; const foxRow = 1; const foxCols = 14; let foxCurrentFrame = 0;
+        const bear = new Image(); bear.src = "../assets/MiniBear.png"; const bearFrameWidth = 32; const bearFrameHeight = 32; const bearRow = 5; const bearCols = 10; let bearCurrentFrame = 0;
+
+        // ---------------- DRAW FUNCTIONS ----------------
+        function drawEgg() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const rarity = window.currentEggRarity || 'common';
+            const eggSprite = (rarity === 'rare') ? rareEgg : commonEgg;
+            const row = (rarity === 'rare') ? rareEggRow : commonEggRow;
+
+            ctx.drawImage(
+                eggSprite,
+                eggCurrentCol * eggFrameWidth, row * eggFrameHeight,
+                eggFrameWidth, eggFrameHeight,
+                200, 150, eggFrameWidth * 6, eggFrameHeight * 6
+            );
+        }
+
+        function drawDog() { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(dog, dogCurrentFrame * dogFrameWidth, dogRow * dogFrameHeight, dogFrameWidth, dogFrameHeight, 200, 150, dogFrameWidth * 5, dogFrameHeight * 5); }
+        function drawBird() { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(bird, birdCurrentFrame * birdFrameWidth, 0, birdFrameWidth, birdFrameHeight, 200, 150, birdFrameWidth * 5, birdFrameHeight * 5); }
+        function drawBull() { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(bull, bullCurrentFrame * bullFrameWidth, bullRow * bullFrameHeight, bullFrameWidth, bullFrameHeight, 200, 150, bullFrameWidth * 5, bullFrameHeight * 5); }
+        function drawFox() { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(fox, foxCurrentFrame * foxFrameWidth, foxRow * foxFrameHeight, foxFrameWidth, foxFrameHeight, 200, 150, foxFrameWidth * 5, foxFrameHeight * 5); }
+        function drawBear() { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(bear, bearCurrentFrame * bearFrameWidth, bearRow * bearFrameHeight, bearFrameWidth, bearFrameHeight, 200, 150, bearFrameWidth * 5, bearFrameHeight * 5); }
+
+        // ---------------- EGG CLICK ----------------
+        const selectedEgg = (window.currentEggRarity === 'rare') ? rareEgg : commonEgg;
+        selectedEgg.onload = () => {
+            drawEgg();
+            canvas.addEventListener("click", () => {
+                if (isEggDone) return;
+                eggCurrentCol++;
+                if (eggCurrentCol > eggEndCol) {
+                    isEggDone = true;
+                    startPetAnimation();
+                    return;
+                }
+                drawEgg();
+            });
+        };
+
+        // ---------------- START PET ANIMATION ----------------
+        function startPetAnimation() {
+            clearInterval(petInterval);
+            const rarity = window.currentEggRarity || 'common';
+            const candidates = (rarity === 'rare') ? ['bear', 'fox'] : ['dog', 'bull', 'bunny'];
+            const petKey = candidates[Math.floor(Math.random() * candidates.length)];
+
+            if (petKey === 'dog') { activePet = 'dog'; dogRow = 4; dogCols = 8; dogCurrentFrame = 0; petInterval = setInterval(() => { drawDog(); dogCurrentFrame = (dogCurrentFrame + 1) % dogCols; }, animationSpeed); }
+            if (petKey === 'bird') { activePet = 'bird'; birdCurrentFrame = 0; petInterval = setInterval(() => { drawBird(); birdCurrentFrame = (birdCurrentFrame + 1) % birdTotalFrames; }, animationSpeed); }
+            if (petKey === 'bull') { activePet = 'bull'; bullCurrentFrame = 0; petInterval = setInterval(() => { drawBull(); bullCurrentFrame = (bullCurrentFrame + 1) % bullCols; }, animationSpeed); }
+            if (petKey === 'bear') { activePet = 'bear'; bearCurrentFrame = 0; petInterval = setInterval(() => { drawBear(); bearCurrentFrame = (bearCurrentFrame + 1) % bearCols; }, animationSpeed); }
+            if (petKey === 'fox') { activePet = 'fox'; foxCurrentFrame = 0; petInterval = setInterval(() => { drawFox(); foxCurrentFrame = (foxCurrentFrame + 1) % foxCols; }, animationSpeed); }
+
+            if (window.finishHatch) window.finishHatch(petKey);
+        }
+    </script>
+</body>
+
+</html>

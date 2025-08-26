@@ -8,54 +8,136 @@
   <link rel="stylesheet" href="../css/style.css" />
   <script defer src="../js/common.js"></script>
   <script>
-    // const pool = {
-    //   common: [{ name: 'Bunny', img: '../assets/bunny.svg' }, { name: 'Kitty', img: '../assets/basket.svg' }],
-    //   rare: [{ name: 'Unicorn', img: '../assets/unicorn.svg' }, { name: 'Dragon', img: '../assets/dragon.svg' }]
-    // };
     const pool = {
       common: [
-        { name: 'Bunny', img: '../assets/bunny.jpg' },
-        // { name: 'Kitty', img: '../assets/basket.svg' }
+        { name: 'Bird', img: '../assets/bunnyp.jpg' },
+        { name: 'Dog', img: '../assets/dog.jpg' },
+        { name: 'Bull', img: '../assets/bull.jpg' }
+
       ],
-      uncommon: [
-        { name: 'Wolf', img: '../assets/fox.jpg' },
-        { name: 'Pegasus', img: '../assets/pegasus.jpg' }
-      ],
+      // uncommon: [
+      //   { name: 'Wolf', img: '../assets/foxp.jpg' },
+      //   { name: 'Pegasus', img: '../assets/pegasus.jpg' }
+      // ],
       rare: [
-        { name: 'Unicorn', img: '../assets/unicorn.jpg' },
-        { name: 'Dragon', img: '../assets/dragon.jpg' }
+        { name: 'Bear', img: '../assets/bear.jpg' },
+        { name: 'Fox', img: '../assets/fox.jpg' }
       ]
     };
+
     function rnd(arr) { return arr[Math.floor(Math.random() * arr.length)] }
+
     function render() {
-      const inv = invFor('egg'); const list = document.querySelector('#eggs'); const zoo = document.querySelector('#zoo');
-      list.innerHTML = ''; zoo.innerHTML = '';
+      const inv = invFor('egg');
+      const list = document.querySelector('#eggs');
+      const zoo = document.querySelector('#zoo');
+      list.innerHTML = '';
+      zoo.innerHTML = '';
+
+      // Render eggs
       inv.eggs.forEach((eg, i) => {
-        const c = document.createElement('div'); c.className = 'card flex';
-        c.innerHTML = `<img class='thumb' src='../assets/egg.png'/><div style='flex:1'><h2>${eg.name} <span class='badge'>${eg.rarity}</span></h2></div>
-      <button class='btn success' data-hatch='${i}'>Hatch</button>`; list.appendChild(c);
+        const c = document.createElement('div');
+        c.className = 'card flex';
+        if (eg.rarity == "common") {
+          c.innerHTML = `
+          <img class='thumb' src='../assets/common_egg.jpg'/>
+          <div style='flex:1'>
+            <h2>${eg.name} <span class='badge'>${eg.rarity}</span></h2>
+          </div>
+          <button class='btn success' data-hatch='${i}'>Hatch</button>`;
+        }
+        else {
+          c.innerHTML = `<img class='thumb' src='../assets/rare_egg.jpg'/><div style='flex:1'>
+            <h2>${eg.name} <span class='badge'>${eg.rarity}</span></h2>
+          </div>
+          <button class='btn success' data-hatch='${i}'>Hatch</button>`;
+        }
+
+        list.appendChild(c);
       });
+
+      // Render creatures
       inv.creatures.forEach(cr => {
-        const c = document.createElement('div'); c.className = 'card flex';
-        c.innerHTML = `<img class='thumb' src='${cr.img}'/><div><h2>${cr.name}</h2><div class='small'>${cr.rarity}</div></div>`; zoo.appendChild(c);
+        const c = document.createElement('div');
+        c.className = 'card flex';
+        c.innerHTML = `
+          <img class='thumb' src='${cr.img}'/>
+          <div>
+            <h2>${cr.name}</h2>
+            <div class='small'>${cr.rarity}</div>
+          </div>`;
+        zoo.appendChild(c);
       });
-      list.addEventListener('click', (ev) => {
-        const i = ev.target.getAttribute('data-hatch'); if (i === null) return;
-        const egg = inv.eggs.splice(Number(i), 1)[0]; const creature = rnd(pool[egg.rarity]); inv.creatures.push({ ...creature, rarity: egg.rarity, bornAt: Date.now() });
-        saveInv('egg', inv); const box = document.querySelector('#anim');
-        box.innerHTML = `<div class='card center fade-in'><h2>Crack... crack...</h2><img class='thumb' src='${creature.img}'/><p>You hatched a <strong>${creature.name}</strong>!</p></div>`; render();
+
+      // Handle hatching
+      list.addEventListener('click', async (ev) => {
+        const i = ev.target.getAttribute('data-hatch');
+        if (i === null) return;
+
+        // Remove egg from inventory
+        const egg = inv.eggs.splice(Number(i), 1)[0];
+        saveInv('egg', inv); // egg removed immediately
+
+        // Load animation.html into #anim
+        const box = document.querySelector('#anim');
+        const response = await fetch("animation.html");
+        const animHTML = await response.text();
+        box.innerHTML = animHTML;
+
+        // Pass rarity to animation.html via global
+        window.currentEggRarity = egg.rarity;
+
+        // Inject a global callback so animation.html can notify when done
+        window.finishHatch = function (petKey) {
+          let creature;
+
+          if (petKey) {
+            // Find creature from pool[rarity] that matches the revealed pet
+            const match = pool[egg.rarity].find(c => c.name.toLowerCase() === petKey);
+            if (match) {
+              creature = match;
+            } else {
+              // fallback random if mismatch
+              creature = rnd(pool[egg.rarity]);
+            }
+          } else {
+            // fallback if no key given
+            creature = rnd(pool[egg.rarity]);
+          }
+
+          inv.creatures.push({ ...creature, rarity: egg.rarity, bornAt: Date.now() });
+          saveInv('egg', inv);
+          render();
+        };
+
+        // Re-run animation.js inside the loaded HTML
+        const scripts = box.querySelectorAll("script");
+        scripts.forEach(oldScript => {
+          const newScript = document.createElement("script");
+          if (oldScript.src) {
+            newScript.src = oldScript.src;
+          } else {
+            newScript.textContent = oldScript.textContent;
+          }
+          document.body.appendChild(newScript);
+        });
       });
+
     }
+
     document.addEventListener('DOMContentLoaded', render);
   </script>
 </head>
 
 <body>
   <div class="nav">
-    <div class="inner"><a href="../index.html">Home</a><a href="index.html">Egg Hatchery</a>
+    <div class="inner">
+      <a href="../index.html">Home</a>
+      <a href="index.html">Egg Hatchery</a>
       <div style="margin-left:auto" class="kpi">💰 <strong data-wallet>0</strong> pts</div>
     </div>
   </div>
+
   <div class="container fade-in">
     <h1>Hatchery</h1>
     <div id="anim"></div>
